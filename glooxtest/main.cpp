@@ -5,45 +5,66 @@
 #include <gloox/messagehandler.h>
 #include <gloox/message.h>
 #include <gloox/messagesession.h>
+#include <gloox/messagesessionhandler.h>
 
 using namespace std;
 using namespace gloox;
 
-class EchoMessageHandler : public MessageHandler {
+
+class I2CController  : public MessageSessionHandler, MessageHandler {
+private:
+    Client* m_client;
 public:
-    Client* client;
+    I2CController(Client* _client);
 
-    virtual void handleMessage(const Message& msg,
-                               MessageSession* session = 0) {
-        cout << "Received message " << msg.body() << endl;
+    virtual void handleMessageSession(MessageSession* session);
 
-        if (session) {
-            session->send("received");
-        } else {
-            cout << "No message session." << endl;
+    virtual void handleMessage(const Message& msg, MessageSession* session = 0);
 
-            client->send(Message(Message::Chat, msg.from(), string("Hallo Welt!")));
-            cout << client->streamErrorText() << endl;
-        }
-        client->disconnect();
-    }
+    Client* client();
 };
 
+I2CController::I2CController(Client* _client) : m_client(_client) {
+    if (_client)
+        _client->registerMessageSessionHandler(this);
+}
+
+void I2CController::handleMessageSession(MessageSession* session) {
+    cout << "Message session from " << session->target().full() << endl;
+    session->registerMessageHandler(this);
+}
+
+void I2CController::handleMessage(const Message& msg, MessageSession* session) {
+    cout << "Message: " << msg.body() << endl;
+    if (session) {
+        cout << "With session. :) " << endl;
+        session->send("Hallo Welt!");
+    }
+}
+
+
+Client* I2CController::client() {
+    return this->m_client;
+}
+
 int main(int argc, char **argv) {
-
-    JID ui_jid("tux@platon");
-
-    Client* client = new Client(ui_jid, "penguin");
-    EchoMessageHandler* emh = new EchoMessageHandler();
-    emh->client = client;
-    client->registerMessageHandler(emh);
-    client->connect(true);
-
     cout << "Hello, world!" << endl;
 
 
+
+    JID ui_jid("i2c@platon");
+    Client* client = new Client(ui_jid, "i2c");
+
+    I2CController* i2c = new I2CController(client);
+
+    if (!client->connect(true))
+        cerr << "could not connect!" << endl;
+
+
+
+
     delete client;
-    delete emh;
+
 
     return 0;
 }
