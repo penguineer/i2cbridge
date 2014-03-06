@@ -7,3 +7,5 @@ add_executable(glooxtest main.cpp)
 find_library(GLOOX_LIBRARY gloox)
 target_link_libraries(glooxtest ${GLOOX_LIBRARY})
 
+find_library(CONFIG_LIBRARY config++)
+target_link_libraries(glooxtest ${CONFIG_LIBRARY})

@@ -1,0 +1,4 @@
+xmpp: {
+  jid = "Your Jabber ID here";
+  password = "Your password here";
+}
