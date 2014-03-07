@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 
 
 #include <gloox/jid.h>
@@ -10,6 +11,9 @@
 #include <gloox/messagesessionhandler.h>
 
 #include <libconfig.h++>
+
+
+#include "configuredclientfactory.h"
 
 using namespace std;
 using namespace gloox;
@@ -51,33 +55,21 @@ Client* I2CController::client() {
     return this->m_client;
 }
 
+
+
+
+
+
 int main(int argc, char **argv) {
     cout << "Hello, world!" << endl;
 
-    libconfig::Config cfg;
-
+    Client* client=0;
     try {
-        cfg.readFile("i2ccontrol.config");
-    } catch (const libconfig::FileIOException &fioex) {
-        cerr << "I/O error on reading config file: " << fioex.what() << endl;
+        xmpppi::ConfiguredClientFactory ccf("i2ccontrol.config");
+        client = ccf.newClient();
+    } catch (xmpppi::ConfiguredClientFactoryException &ccfe) {
+        cerr << "ConfiguredClientFactoryException: " << ccfe.what() << endl;
         return (-1);
-    } catch(const libconfig::ParseException &pex) {
-        cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
-             << " - " << pex.getError() << endl;
-        return(-1);
-    }
-
-    Client* client = 0;
-    try {
-        string jid = cfg.lookup("xmpp.jid");
-        string password = cfg.lookup("xmpp.password");
-
-        cout << "Got jid " << jid << endl;
-
-        JID ui_jid(jid);
-        client = new Client(ui_jid, password);
-    } catch (const libconfig::SettingNotFoundException &snfex) {
-        cerr << "Setting not found: " << snfex.getPath() << endl;
     }
 
 
