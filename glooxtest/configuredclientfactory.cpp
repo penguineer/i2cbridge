@@ -31,6 +31,12 @@ const char* ConfiguredClientFactoryException::what() const throw() {
 
 ConfiguredClientFactory::ConfiguredClientFactory(std::string _filename) : m_filename(_filename), m_cfg(0) {}
 
+ConfiguredClientFactory::~ConfiguredClientFactory() {
+    if (m_cfg)
+        delete m_cfg;
+}
+
+
 std::string ConfiguredClientFactory::filename() {
     return m_filename;
 }
@@ -60,7 +66,7 @@ void ConfiguredClientFactory::loadConfig() throw(ConfiguredClientFactoryExceptio
         delete m_cfg;
 
     //TODO check possible config directories
-    
+
     m_cfg = new libconfig::Config();
 
     try {

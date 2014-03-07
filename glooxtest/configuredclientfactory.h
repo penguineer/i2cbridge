@@ -22,6 +22,8 @@ private:
 class ConfiguredClientFactory {
 public:
     ConfiguredClientFactory(std::string _filename);
+    
+    virtual ~ConfiguredClientFactory();
 
     std::string filename();
 
