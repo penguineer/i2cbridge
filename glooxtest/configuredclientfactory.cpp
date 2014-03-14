@@ -1,17 +1,13 @@
 //TODO copyright notice
 //TODO comments
 
+#include "configuredclientfactory.h"
+
+
 
 #include <iostream>
 #include <string>
 #include <sstream>
-
-#include <gloox/jid.h>
-#include <gloox/client.h>
-
-#include <libconfig.h++>
-
-#include "configuredclientfactory.h"
 
 
 using namespace xmpppi;

@@ -7,6 +7,11 @@
 
 #include <exception>
 
+#include <libconfig.h++>
+
+#include <gloox/jid.h>
+#include <gloox/client.h>
+
 namespace xmpppi {
 
 class ConfiguredClientFactoryException : public std::exception {

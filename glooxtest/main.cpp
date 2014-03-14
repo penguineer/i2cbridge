@@ -10,8 +10,6 @@
 #include <gloox/messagesession.h>
 #include <gloox/messagesessionhandler.h>
 
-#include <libconfig.h++>
-
 
 #include "configuredclientfactory.h"
 
@@ -54,10 +52,6 @@ void I2CController::handleMessage(const Message& msg, MessageSession* session) {
 Client* I2CController::client() {
     return this->m_client;
 }
-
-
-
-
 
 
 int main(int argc, char **argv) {
