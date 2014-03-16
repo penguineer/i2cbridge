@@ -42,6 +42,40 @@ std::string SpaceCommand::param(const std::string key) throw(std::out_of_range) 
     return m_params.at(key);
 }
 
+std::string SpaceCommand::as_body() {
+    // build parameter list
+    std::stringstream s_params("");
+
+    space_command_params::iterator iter;
+
+    for (iter = m_params.begin(); iter != m_params.end(); iter++) {
+        // count lines in parameter value
+        int paramlines = 0;
+
+        if (iter->second.empty())
+            paramlines = 0;
+        else {
+            paramlines = 1;
+            const char* val = iter->second.c_str();
+            int i;
+            for (i = iter->second.size(); i; i--)
+                if (val[i] == '\n')
+                    paramlines++;
+        }
+
+        s_params << paramlines << " " << iter->first << std::endl;
+        s_params << iter->second << std::endl;
+    }
+
+
+    // build message body
+    std::string body;
+    body.append(this->cmd());
+    body.append("\n");
+    body.append(s_params.str());
+
+    return body;
+}
 
 SpaceControlClient::SpaceControlClient(gloox::Client* _client, SpaceControlHandler* _hnd)
     : m_client(_client), m_hnd(_hnd) {
@@ -67,7 +101,7 @@ void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::Message
 
         if (response && session) {
             //TODO generate correct message format
-            session->send(response->cmd());
+            session->send(response->as_body());
         }
 
         if (response)
@@ -78,7 +112,7 @@ void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::Message
         par["body"] = scfe.body();
         SpaceCommand ex(session->target(), "exception", par);
         //TODO generate correct message format
-        session->send(ex.cmd());
+        session->send(ex.as_body());
     }
 }
 

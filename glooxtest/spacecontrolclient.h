@@ -42,6 +42,7 @@ public:
     gloox::JID peer();
     std::string param(const std::string key) throw(std::out_of_range);
 
+    std::string as_body();
 private:
     gloox::JID m_peer;
     std::string m_cmd;
