@@ -34,10 +34,6 @@ private:
 };
 
 class SpaceCommand {
-private:
-    gloox::JID m_peer;
-    std::string m_cmd;
-    space_command_params m_params;
 public:
     SpaceCommand(gloox::JID _peer, const std::string _cmd,
                  space_command_params _params);
@@ -45,6 +41,11 @@ public:
     std::string cmd();
     gloox::JID peer();
     std::string param(const std::string key) throw(std::out_of_range);
+
+private:
+    gloox::JID m_peer;
+    std::string m_cmd;
+    space_command_params m_params;
 };
 
 class SpaceControlHandler {
@@ -54,9 +55,6 @@ public:
 
 
 class SpaceControlClient : public gloox::MessageSessionHandler, gloox::MessageHandler {
-private:
-    gloox::Client* m_client;
-    SpaceControlHandler* m_hnd;
 public:
     SpaceControlClient(gloox::Client* _client, SpaceControlHandler* _hnd);
 
@@ -67,8 +65,13 @@ public:
     gloox::Client* client();
 
     SpaceControlHandler* handler();
+
 protected:
   SpaceCommand parseMessage(gloox::JID peer, std::string body) throw(SpaceCommandFormatException);
+
+private:
+    gloox::Client* m_client;
+    SpaceControlHandler* m_hnd;
 };
 
 }
