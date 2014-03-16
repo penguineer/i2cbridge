@@ -7,8 +7,9 @@
 
 using namespace xmpppi;
 
-SpaceCommand::SpaceCommand(gloox::JID _peer, const std::string _cmd)
-    : m_peer(_peer), m_cmd(_cmd) {}
+SpaceCommand::SpaceCommand(gloox::JID _peer, const std::string _cmd,
+                           std::map<const std::string, std::string> _params)
+    : m_peer(_peer), m_cmd(_cmd), m_params(_params) {}
 
 std::string SpaceCommand::cmd() {
     return this->m_cmd;
@@ -16,6 +17,10 @@ std::string SpaceCommand::cmd() {
 
 gloox::JID SpaceCommand::peer() {
     return this->m_peer;
+}
+
+std::string SpaceCommand::param(const std::string key) throw(std::out_of_range) {
+    return m_params.at(key);
 }
 
 
@@ -31,19 +36,24 @@ void SpaceControlClient::handleMessageSession(gloox::MessageSession* session) {
 }
 
 void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::MessageSession* session) {
+    // get the parameter map
+    space_command_params params;
+    //params["id"] = "id1";
+    //TODO parse params from msg body
+    
     // create the command
-    SpaceCommand cmd(session->target(), msg.body());
+    SpaceCommand cmd(session->target(), msg.body(), params);
 
     SpaceCommand* response =  0;
     // call handler
     if (m_hnd) {
         m_hnd->handleSpaceCommand(cmd, response);
     }
-    
+
     if (response && session) {
-      session->send(response->cmd());
-      
-      delete response;
+        session->send(response->cmd());
+
+        delete response;
     }
 }
 

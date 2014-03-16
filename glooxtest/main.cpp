@@ -19,9 +19,13 @@ public:
 };
 
 void I2CHandler::handleSpaceCommand(SpaceCommand sc, SpaceCommand* &response) {
-  cout << "Got command " << sc.cmd() << " from " << sc.peer().full() << endl;
-  
-  response = new SpaceCommand(sc.peer(), "Hallo Welt!");
+    cout << "Got command " << sc.cmd() << " from " << sc.peer().full() << endl;
+    try {
+        cout << "Param id: " << sc.param("id") << endl;
+    } catch (std::out_of_range &oor) {
+        cerr << "Parameter id is not available!" << endl;
+    }
+    response = new SpaceCommand(sc.peer(), "Hallo Welt!", space_command_params());
 }
 
 
