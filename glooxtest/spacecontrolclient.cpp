@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <cstdlib>
 
 
 using namespace xmpppi;
@@ -48,17 +49,55 @@ void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::Message
     std::stringstream ss(msg.body());
     std::string line;
     while (std::getline(ss, line, '\n')) {
-        std::cout << "line: " << line << std::endl;
         // first line is command
         if (command.empty())
             command = line;
         else {
-            //TODO split the line
+            /* Note: std::stoi is not available yet :(
+             *
+             *            // split the parameter line
+             *            const size_t idx = 0;
+             *            // first is the number of lines containing the value
+             *            const int parlines = std::stoi(line, &idx);
+             *            // after the space is the parameter name
+             *            const std::string key = line.substr(idx+1);
+             */
+
+            // find the space character
+            const size_t idx = line.find(' ');
+            if (idx == std::string::npos) {
+                //TODO throw exception
+            }
+
+            // get the number of parameter lines
+            const std::string s_parlines = line.substr(0, idx);
+            int parlines = strtol(s_parlines.c_str(), 0, 10);
+            if (parlines == 0) {
+                //TODO throw exception
+            }
+
+            // get the parameter key
+            const std::string key = line.substr(idx+1);
+
+            // get the parameter lines
+            std::string value;
+            while (parlines--) {
+                std::string parline;
+                if (!std::getline(ss, parline, '\n')) {
+                    //TODO throw exception
+                }
+                if (!value.empty())
+                    value.append("\n");
+                value.append(parline);
+            }
+            
+            // add to parameter map
+            params[key] = value;
         }
     }
 
     // create the command
-    SpaceCommand cmd(session->target(), command, params);
+    const SpaceCommand cmd(session->target(), command, params);
 
     SpaceCommand* response =  0;
     // call handler
