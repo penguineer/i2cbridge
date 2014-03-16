@@ -7,7 +7,20 @@
 
 using namespace xmpppi;
 
-SpaceControlClient::SpaceControlClient(gloox::Client* _client) : m_client(_client) {
+SpaceCommand::SpaceCommand(gloox::JID _peer, const std::string _cmd)
+    : m_peer(_peer), m_cmd(_cmd) {}
+
+std::string SpaceCommand::cmd() {
+    return this->m_cmd;
+}
+
+gloox::JID SpaceCommand::peer() {
+    return this->m_peer;
+}
+
+
+SpaceControlClient::SpaceControlClient(gloox::Client* _client, SpaceControlHandler* _hnd)
+    : m_client(_client), m_hnd(_hnd) {
     if (_client)
         _client->registerMessageSessionHandler(this);
 }
@@ -18,14 +31,26 @@ void SpaceControlClient::handleMessageSession(gloox::MessageSession* session) {
 }
 
 void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::MessageSession* session) {
-    std::cout << "Message: " << msg.body() << std::endl;
-    if (session) {
-        std::cout << "With session. :) " << std::endl;
-        session->send("Hallo Welt!");
+    // create the command
+    SpaceCommand cmd(session->target(), msg.body());
+
+    SpaceCommand* response =  0;
+    // call handler
+    if (m_hnd) {
+        m_hnd->handleSpaceCommand(cmd, response);
+    }
+    
+    if (response && session) {
+      session->send(response->cmd());
+      
+      delete response;
     }
 }
 
-
 gloox::Client* SpaceControlClient::client() {
     return this->m_client;
+}
+
+SpaceControlHandler* SpaceControlClient::handler() {
+    return this->m_hnd;
 }
