@@ -55,21 +55,31 @@ void SpaceControlClient::handleMessageSession(gloox::MessageSession* session) {
 }
 
 void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::MessageSession* session) {
-    // create the command
-    const SpaceCommand cmd = parseMessage(session->target(), msg.body());
+    try {
+        // create the command
+        const SpaceCommand cmd = parseMessage(session->target(), msg.body());
 
-    SpaceCommand* response =  0;
-    // call handler
-    if (m_hnd) {
-        m_hnd->handleSpaceCommand(cmd, response);
+        SpaceCommand* response =  0;
+        // call handler
+        if (m_hnd) {
+            m_hnd->handleSpaceCommand(cmd, response);
+        }
+
+        if (response && session) {
+            //TODO generate correct message format
+            session->send(response->cmd());
+        }
+
+        if (response)
+            delete response;
+    } catch (SpaceCommandFormatException& scfe) {
+        space_command_params par;
+        par["what"] = scfe.what();
+        par["body"] = scfe.body();
+        SpaceCommand ex(session->target(), "exception", par);
+        //TODO generate correct message format
+        session->send(ex.cmd());
     }
-
-    if (response && session) {
-        session->send(response->cmd());
-    }
-
-    if (response)
-        delete response;
 }
 
 gloox::Client* SpaceControlClient::client() {
