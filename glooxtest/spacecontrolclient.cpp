@@ -4,6 +4,9 @@
 #include "spacecontrolclient.h"
 
 #include <iostream>
+#include <string>
+#include <sstream>
+
 
 using namespace xmpppi;
 
@@ -36,13 +39,26 @@ void SpaceControlClient::handleMessageSession(gloox::MessageSession* session) {
 }
 
 void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::MessageSession* session) {
-    // get the parameter map
+    // the command
+    std::string command;
+    // the parameter map
     space_command_params params;
-    //params["id"] = "id1";
-    //TODO parse params from msg body
-    
+
+    //parse command and params from msg body
+    std::stringstream ss(msg.body());
+    std::string line;
+    while (std::getline(ss, line, '\n')) {
+        std::cout << "line: " << line << std::endl;
+        // first line is command
+        if (command.empty())
+            command = line;
+        else {
+            //TODO split the line
+        }
+    }
+
     // create the command
-    SpaceCommand cmd(session->target(), msg.body(), params);
+    SpaceCommand cmd(session->target(), command, params);
 
     SpaceCommand* response =  0;
     // call handler
