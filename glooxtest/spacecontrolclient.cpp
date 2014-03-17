@@ -81,18 +81,49 @@ std::string SpaceCommand::as_body() {
                     paramlines++;
         }
 
+        if (!params.str().empty())
+            params << std::endl;
         params << paramlines << " " << iter->first << std::endl;
-        params << iter->second << std::endl;
+        params << iter->second;
     }
 
 
     // build message body
     std::stringstream body;
-    body << this->cmd() << std::endl;
-    body << params;
+    body << this->cmd();
+    if (!params.str().empty())
+        body << std::endl << params.str();
 
     return body.str();
 }
+
+// local helper class
+class Sink : public SpaceCommandSink {
+public:
+    Sink(gloox::MessageSession* _session) : m_session(_session) {}
+    virtual ~Sink() {}
+
+    virtual void sendSpaceCommand(SpaceCommand* sc);
+    virtual void dispose();
+
+private:
+    gloox::MessageSession* m_session;
+};
+
+void Sink::sendSpaceCommand(SpaceCommand* sc) {
+    if (m_session && sc) {
+        m_session->send(sc->as_body());
+    }
+    //TODO else
+}
+
+void Sink::dispose() {
+    if (m_session)
+        delete m_session;
+
+    m_session = 0;
+}
+
 
 SpaceControlClient::SpaceControlClient(gloox::Client* _client, SpaceControlHandler* _hnd)
     : m_client(_client), m_hnd(_hnd) {
@@ -106,35 +137,33 @@ void SpaceControlClient::handleMessageSession(gloox::MessageSession* session) {
 }
 
 void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::MessageSession* session) {
-    try {
-        // create the command
-        const SpaceCommand cmd = parseMessage(session->target(), msg.body());
+    if (session)
+        try {
+            // create the command
+            const SpaceCommand cmd = parseMessage(session->target(), msg.body());
 
-        SpaceCommand* response =  0;
-        // call handler
-        if (m_hnd)
-            m_hnd->handleSpaceCommand(cmd, response);
+            SpaceCommandSink* sink = new Sink(session);
 
-        if (response && session)
-            session->send(response->as_body());        
+            // call handler
+            if (m_hnd)
+                m_hnd->handleSpaceCommand(cmd, sink);
 
-        if (response)
-            delete response;
-	
-    } catch (SpaceCommandFormatException& scfe) {
-        SpaceCommand::space_command_params par;
-        par["what"] = scfe.what();
-        par["body"] = scfe.body();
-        // add line number if available
-        if (scfe.line_number()) {
-            // it would be nicer to use std::to_string here, when available
-            std::stringstream s;
-            s << scfe.line_number();
-            par["line number"] = s.str();
+            delete sink;
+        } catch (SpaceCommandFormatException& scfe) {
+            SpaceCommand::space_command_params par;
+            par["what"] = scfe.what();
+            par["body"] = scfe.body();
+            // add line number if available
+            if (scfe.line_number()) {
+                // it would be nicer to use std::to_string here, when available
+                std::stringstream s;
+                s << scfe.line_number();
+                par["line number"] = s.str();
+            }
+            SpaceCommand ex(session->target(), "exception", par);
+            session->send(ex.as_body());
         }
-        SpaceCommand ex(session->target(), "exception", par);
-        session->send(ex.as_body());
-    }
+    //TODO else warn
 }
 
 gloox::Client* SpaceControlClient::client() {
@@ -144,6 +173,14 @@ gloox::Client* SpaceControlClient::client() {
 SpaceControlHandler* SpaceControlClient::handler() {
     return this->m_hnd;
 }
+
+SpaceCommandSink* SpaceControlClient::create_sink(gloox::JID peer) {
+    gloox::MessageSession* session = new gloox::MessageSession(this->m_client, peer);
+
+    return new Sink(session);
+}
+
+
 
 SpaceCommand SpaceControlClient::parseMessage(gloox::JID peer, std::string body)
 throw(SpaceCommandFormatException) {

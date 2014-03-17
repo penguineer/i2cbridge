@@ -84,6 +84,7 @@ private:
  * This class represents a Space Command, consisting of the issuing/receiving
  * peer, the command name and the parameter map.
  */
+//TODO copy constructor
 class SpaceCommand {
 public:
     //! Convenience typedef for the parameter map.
@@ -133,6 +134,25 @@ private:
 };
 
 
+//! Interface to send out Space Commands
+/*!
+/* A sink that has been provided to a command handler, must not be disposed.
+ * However, if the sink has been obtained explicitly, the caller is
+ * responsible for disposing and deleting the sink object.
+ */
+class SpaceCommandSink {
+public:
+    //! Send a Space Command.
+    /*!
+     * \param sc The space command to be sent.
+     */
+    virtual void sendSpaceCommand(SpaceCommand* sc) = 0;
+
+    //! Dispose of the sink.
+    virtual void dispose() = 0;
+};
+
+
 //! Interface for space control handlers to receive and process messages.
 /*!
  * This class must be derrived in order to handle message sent to the
@@ -144,10 +164,10 @@ public:
     //TODO allow for multiple responses -> rather a callback interface than a response pointer
     //! Handle an incoming Space Command
     /*!
-     * \param sc The incoming Space Command instance
-     * \param response Put a pointer to the response command here, or NULL if a response shall not be sent.
+     * \param sc   The incoming Space Command instance.
+     * \param sink The sink for response commands.
      */
-    virtual void handleSpaceCommand(SpaceCommand sc, SpaceCommand* &response) = 0;
+    virtual void handleSpaceCommand(SpaceCommand sc, SpaceCommandSink* sink) = 0;
 };
 
 
@@ -190,6 +210,13 @@ public:
      * \returns the space control handler used by this space control client.
      */
     SpaceControlHandler* handler();
+
+    //! Create a space command sink with a new session.
+    /*!
+     * \param peer The communication peer for the session.
+     * \returns a space command sink with a new session.
+     */
+    SpaceCommandSink* create_sink(gloox::JID peer);
 
 protected:
     //! Parse an XMPP message body
