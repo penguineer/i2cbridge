@@ -1,5 +1,6 @@
 //TODO copyright notice
 //TODO comments
+//TODO fix the newline specification
 
 #include "spacecontrolclient.h"
 
@@ -12,8 +13,8 @@
 using namespace xmpppi;
 
 SpaceCommandFormatException::SpaceCommandFormatException(std::string _what,
-        std::string _body)
-    : m_what(_what), m_body(_body) {}
+        std::string _body, int _line_number=0)
+    : m_what(_what), m_body(_body), m_line_number(_line_number) {}
 
 SpaceCommandFormatException::~SpaceCommandFormatException() throw() {}
 
@@ -25,6 +26,9 @@ const char* SpaceCommandFormatException::body() const throw() {
     return m_body.c_str();
 }
 
+int SpaceCommandFormatException::line_number() const throw() {
+    return m_line_number;
+}
 
 SpaceCommand::SpaceCommand(gloox::JID _peer, const std::string _cmd,
                            std::map<const std::string, std::string> _params)
@@ -110,8 +114,14 @@ void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::Message
         SpaceCommand::space_command_params par;
         par["what"] = scfe.what();
         par["body"] = scfe.body();
+        // add line number if available
+        if (scfe.line_number()) {
+            // it would be nicer to use std::to_string here, when available
+            std::stringstream s;
+            s << scfe.line_number();
+            par["line number"] = s.str();
+        }
         SpaceCommand ex(session->target(), "exception", par);
-        //TODO generate correct message format
         session->send(ex.as_body());
     }
 }
@@ -132,9 +142,12 @@ throw(SpaceCommandFormatException) {
     SpaceCommand::space_command_params params;
 
     //parse command and params from msg body
+    int line_number = 0;
     std::stringstream ss(body);
     std::string line;
     while (std::getline(ss, line, '\n')) {
+        line_number++;
+
         // first line is command
         if (command.empty())
             command = line;
@@ -152,13 +165,13 @@ throw(SpaceCommandFormatException) {
             // find the space character
             const size_t idx = line.find(' ');
             if (idx == std::string::npos)
-                throw SpaceCommandFormatException("Missing space character in parameter key line.", body);
+                throw SpaceCommandFormatException("Missing space character in parameter key line.", body, line_number);
 
             // get the number of parameter lines
             const std::string s_parlines = line.substr(0, idx);
             int parlines = strtol(s_parlines.c_str(), 0, 10);
             if (parlines == 0)
-                throw SpaceCommandFormatException("Invalid integer for parameter line count.", body);
+                throw SpaceCommandFormatException("Invalid integer for parameter line count.", body, line_number);
 
             // get the parameter key
             const std::string key = line.substr(idx+1);
@@ -168,7 +181,9 @@ throw(SpaceCommandFormatException) {
             while (parlines--) {
                 std::string parline;
                 if (!std::getline(ss, parline, '\n'))
-                    throw SpaceCommandFormatException("There are less lines that stated in the parameter line count!", body);
+                    throw SpaceCommandFormatException("There are less lines that stated in the parameter line count!", body, line_number);
+                line_number++;
+
                 if (!value.empty())
                     value.append("\n");
                 value.append(parline);

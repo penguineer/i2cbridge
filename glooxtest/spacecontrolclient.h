@@ -29,10 +29,11 @@ class SpaceCommandFormatException : public std::exception {
 public:
     //! Create a new exception
     /*!
-     * \param _what The exception message, goes to std::exception::what()
-     * \param _body The body of the original space command message.
+     * \param _what        The exception message, goes to std::exception::what()
+     * \param _body        The body of the original space command message.
+     * \param _line_number The number of the errornous line, defaults to 0.
      */
-    SpaceCommandFormatException(std::string _what, std::string _body);
+    SpaceCommandFormatException(std::string _what, std::string _body, int _line_number);
 
     //! Virtual destructor derrived from std::exception.
     virtual ~SpaceCommandFormatException() throw();
@@ -51,9 +52,16 @@ public:
      */
     virtual const char* body() const throw();
 
+    //! Get the line number.
+    /*!
+     * \returns the number of the errornous line.
+     */
+    virtual int line_number() const throw();
+
 private:
     std::string m_what;
     std::string m_body;
+    int m_line_number;
 };
 
 
