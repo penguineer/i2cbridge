@@ -19,8 +19,8 @@
 
 namespace xmpppi {
 
-typedef std::map<const std::string, std::string> space_command_params;
 
+//!
 class SpaceCommandFormatException : public std::exception {
 public:
     SpaceCommandFormatException(std::string _what, std::string _body);
@@ -35,6 +35,8 @@ private:
 
 class SpaceCommand {
 public:
+    typedef std::map<const std::string, std::string> space_command_params;
+
     SpaceCommand(gloox::JID _peer, const std::string _cmd,
                  space_command_params _params);
 
@@ -68,7 +70,7 @@ public:
     SpaceControlHandler* handler();
 
 protected:
-  SpaceCommand parseMessage(gloox::JID peer, std::string body) throw(SpaceCommandFormatException);
+    SpaceCommand parseMessage(gloox::JID peer, std::string body) throw(SpaceCommandFormatException);
 
 private:
     gloox::Client* m_client;

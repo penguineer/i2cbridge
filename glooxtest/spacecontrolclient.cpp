@@ -107,7 +107,7 @@ void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::Message
         if (response)
             delete response;
     } catch (SpaceCommandFormatException& scfe) {
-        space_command_params par;
+        SpaceCommand::space_command_params par;
         par["what"] = scfe.what();
         par["body"] = scfe.body();
         SpaceCommand ex(session->target(), "exception", par);
@@ -129,7 +129,7 @@ throw(SpaceCommandFormatException) {
     // the command
     std::string command;
     // the parameter map
-    space_command_params params;
+    SpaceCommand::space_command_params params;
 
     //parse command and params from msg body
     std::stringstream ss(body);

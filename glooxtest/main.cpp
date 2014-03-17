@@ -25,7 +25,7 @@ void I2CHandler::handleSpaceCommand(SpaceCommand sc, SpaceCommand* &response) {
     } catch (std::out_of_range &oor) {
         cerr << "Parameter id is not available!" << endl;
     }
-    response = new SpaceCommand(sc.peer(), "Hallo Welt!", space_command_params());
+    response = new SpaceCommand(sc.peer(), "Hallo Welt!", SpaceCommand::space_command_params());
 }
 
 
