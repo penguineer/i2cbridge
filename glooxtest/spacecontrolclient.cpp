@@ -48,7 +48,7 @@ std::string SpaceCommand::param(const std::string key) throw(std::out_of_range) 
 
 std::string SpaceCommand::as_body() {
     // build parameter list
-    std::stringstream s_params("");
+    std::stringstream params("");
 
     space_command_params::iterator iter;
 
@@ -67,18 +67,17 @@ std::string SpaceCommand::as_body() {
                     paramlines++;
         }
 
-        s_params << paramlines << " " << iter->first << std::endl;
-        s_params << iter->second << std::endl;
+        params << paramlines << " " << iter->first << std::endl;
+        params << iter->second << std::endl;
     }
 
 
     // build message body
-    std::string body;
-    body.append(this->cmd());
-    body.append("\n");
-    body.append(s_params.str());
+    std::stringstream body;
+    body << this->cmd() << std::endl;
+    body << params;
 
-    return body;
+    return body.str();
 }
 
 SpaceControlClient::SpaceControlClient(gloox::Client* _client, SpaceControlHandler* _hnd)
@@ -99,17 +98,15 @@ void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::Message
 
         SpaceCommand* response =  0;
         // call handler
-        if (m_hnd) {
+        if (m_hnd)
             m_hnd->handleSpaceCommand(cmd, response);
-        }
 
-        if (response && session) {
-            //TODO generate correct message format
-            session->send(response->as_body());
-        }
+        if (response && session)
+            session->send(response->as_body());        
 
         if (response)
             delete response;
+	
     } catch (SpaceCommandFormatException& scfe) {
         SpaceCommand::space_command_params par;
         par["what"] = scfe.what();
