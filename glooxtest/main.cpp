@@ -5,6 +5,7 @@
 
 #include <gloox/client.h>
 
+#include <iostream>
 
 #include "configuredclientfactory.h"
 #include "spacecontrolclient.h"
@@ -35,7 +36,7 @@ int main(int argc, char **argv) {
 
     Client* client=0;
     try {
-        xmppsc::ConfiguredClientFactory ccf("i2ccontrol.config");
+        xmppsc::ConfiguredClientFactory ccf("spacecontrol.config");
         client = ccf.newClient();
     } catch (xmppsc::ConfiguredClientFactoryException &ccfe) {
         cerr << "ConfiguredClientFactoryException: " << ccfe.what() << endl;
