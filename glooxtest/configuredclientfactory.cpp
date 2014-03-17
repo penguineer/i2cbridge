@@ -10,7 +10,7 @@
 #include <sstream>
 
 
-using namespace xmpppi;
+using namespace xmppsc;
 
 
 ConfiguredClientFactoryException::ConfiguredClientFactoryException(std::string _what)

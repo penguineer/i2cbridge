@@ -11,7 +11,7 @@
 
 using namespace std;
 using namespace gloox;
-using namespace xmpppi;
+using namespace xmppsc;
 
 class I2CHandler : public SpaceControlHandler {
 public:
@@ -35,16 +35,16 @@ int main(int argc, char **argv) {
 
     Client* client=0;
     try {
-        xmpppi::ConfiguredClientFactory ccf("i2ccontrol.config");
+        xmppsc::ConfiguredClientFactory ccf("i2ccontrol.config");
         client = ccf.newClient();
-    } catch (xmpppi::ConfiguredClientFactoryException &ccfe) {
+    } catch (xmppsc::ConfiguredClientFactoryException &ccfe) {
         cerr << "ConfiguredClientFactoryException: " << ccfe.what() << endl;
         return (-1);
     }
 
 
     if (client) {
-        xmpppi::SpaceControlClient* scc = new xmpppi::SpaceControlClient(client, new I2CHandler());
+        xmppsc::SpaceControlClient* scc = new xmppsc::SpaceControlClient(client, new I2CHandler());
 
         if (!client->connect(true))
             cerr << "could not connect!" << endl;

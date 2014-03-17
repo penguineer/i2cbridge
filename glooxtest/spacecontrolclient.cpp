@@ -10,7 +10,7 @@
 #include <cstdlib>
 
 
-using namespace xmpppi;
+using namespace xmppsc;
 
 SpaceCommandFormatException::SpaceCommandFormatException(std::string _what,
         std::string _body, int _line_number=0)

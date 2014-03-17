@@ -17,7 +17,7 @@
 #include <gloox/messagesessionhandler.h>
 
 
-namespace xmpppi {
+namespace xmppsc {
 
 
 //! Exception on parsing errors in space command messages.

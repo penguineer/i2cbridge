@@ -11,7 +11,7 @@
 #include <gloox/jid.h>
 #include <gloox/client.h>
 
-namespace xmpppi {
+namespace xmppsc {
 
 //! Exception on errors with the client factory configuration.
 class ConfiguredClientFactoryException : public std::exception {
