@@ -96,28 +96,26 @@ std::string SpaceCommand::as_body() {
 // local helper class
 class Sink : public SpaceCommandSink {
 public:
-    Sink(gloox::MessageSession* _session) : m_session(_session) {}
-    virtual ~Sink() {}
+    Sink(gloox::MessageSession* _session, bool _shared=false) : m_session(_session), m_shared(_shared) {}
+    virtual ~Sink();
 
     virtual void sendSpaceCommand(SpaceCommand* sc);
-    virtual void dispose();
 
 private:
     gloox::MessageSession* m_session;
+    bool m_shared;
 };
+
+Sink::~Sink() {
+    if (!m_shared && m_session)
+        delete m_session;
+}
 
 void Sink::sendSpaceCommand(SpaceCommand* sc) {
     if (m_session && sc) {
         m_session->send(sc->as_body());
     }
     //TODO else
-}
-
-void Sink::dispose() {
-    if (m_session)
-        delete m_session;
-
-    m_session = 0;
 }
 
 
@@ -136,15 +134,16 @@ void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::Message
     if (session)
         try {
             // create the command
+            // may throw a SpaceCommandFormatException
             const SpaceCommand cmd = parseMessage(msg.body());
 
-            SpaceCommandSink* sink = new Sink(session);
+            // create shared sink
+            Sink sink(session, true);
 
             // call handler
             if (m_hnd)
-                m_hnd->handleSpaceCommand(session->target(), cmd, sink);
+                m_hnd->handleSpaceCommand(session->target(), cmd, &sink);
 
-            delete sink;
         } catch (SpaceCommandFormatException& scfe) {
             SpaceCommand::space_command_params par;
             par["what"] = scfe.what();
@@ -173,7 +172,8 @@ SpaceControlHandler* SpaceControlClient::handler() {
 SpaceCommandSink* SpaceControlClient::create_sink(gloox::JID peer) {
     gloox::MessageSession* session = new gloox::MessageSession(this->m_client, peer);
 
-    return new Sink(session);
+    // return sink that is not shared
+    return new Sink(session, false);
 }
 
 

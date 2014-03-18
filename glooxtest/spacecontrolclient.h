@@ -138,9 +138,6 @@ public:
      * \param sc The space command to be sent.
      */
     virtual void sendSpaceCommand(SpaceCommand* sc) = 0;
-
-    //! Dispose of the sink.
-    virtual void dispose() = 0;
 };
 
 
