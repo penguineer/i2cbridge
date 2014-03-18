@@ -92,18 +92,10 @@ public:
 
     //! Create a new Space Command representation.
     /*!
-     * \param _peer   The communication peer for the Space Command
      * \param _cmd    The command name
      * \param _params The parameter map.
      */
-    SpaceCommand(gloox::JID _peer, const std::string _cmd,
-                 space_command_params _params);
-
-    //! Get the communication peer.
-    /*!
-     * \returns The JID of the communication peer as provided by the GLOOX library.
-     */
-    gloox::JID peer();
+    SpaceCommand(const std::string _cmd, space_command_params _params);
 
     //! Get the command name.
     /*!
@@ -128,7 +120,6 @@ public:
      */
     std::string as_body();
 private:
-    gloox::JID m_peer;
     std::string m_cmd;
     space_command_params m_params;
 };
@@ -164,10 +155,11 @@ public:
     //TODO allow for multiple responses -> rather a callback interface than a response pointer
     //! Handle an incoming Space Command
     /*!
+     * \param peer The communication peer as provided by GLOOX
      * \param sc   The incoming Space Command instance.
      * \param sink The sink for response commands.
      */
-    virtual void handleSpaceCommand(SpaceCommand sc, SpaceCommandSink* sink) = 0;
+    virtual void handleSpaceCommand(gloox::JID peer, SpaceCommand sc, SpaceCommandSink* sink) = 0;
 };
 
 
@@ -221,12 +213,11 @@ public:
 protected:
     //! Parse an XMPP message body
     /*!
-     * \param peer The communication peer as provided by GLOOX
      * \param body The message body
      * \returns A Space Command representation of the message body.
      * \throws SpaceCommandFormatException if the body could not be parsed.
      */
-    SpaceCommand parseMessage(gloox::JID peer, std::string body) throw(SpaceCommandFormatException);
+    SpaceCommand parseMessage(std::string body) throw(SpaceCommandFormatException);
 
 private:
     gloox::Client* m_client;

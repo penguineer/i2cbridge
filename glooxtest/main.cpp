@@ -31,13 +31,13 @@ using namespace xmppsc;
 
 class I2CHandler : public SpaceControlHandler {
 public:
-    virtual void handleSpaceCommand(SpaceCommand sc, SpaceCommandSink* sink);
+    virtual void handleSpaceCommand(gloox::JID peer, SpaceCommand sc, SpaceCommandSink* sink);
 };
 
-void I2CHandler::handleSpaceCommand(SpaceCommand sc, SpaceCommandSink* sink) {
-    cout << "Got command " << sc.cmd() << " from " << sc.peer().full() << endl;
+void I2CHandler::handleSpaceCommand(gloox::JID peer, SpaceCommand sc, SpaceCommandSink* sink) {
+    cout << "Got command " << sc.cmd() << " from " << peer.full() << endl;
 
-    xmppsc::SpaceCommand response(sc.peer(), "Hallo Welt!",
+    xmppsc::SpaceCommand response("Hallo Welt!",
                                   xmppsc::SpaceCommand::space_command_params());
 
     sink->sendSpaceCommand(&response);
@@ -45,7 +45,7 @@ void I2CHandler::handleSpaceCommand(SpaceCommand sc, SpaceCommandSink* sink) {
     try {
         xmppsc::SpaceCommand::space_command_params params;
         params["id"] = sc.param("id");
-        xmppsc::SpaceCommand idcmd(sc.peer(), "id", params);
+        xmppsc::SpaceCommand idcmd("id", params);
         sink->sendSpaceCommand(&idcmd);
     } catch (std::out_of_range &oor) {
         cerr << "Parameter id is not available!" << endl;

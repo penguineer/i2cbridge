@@ -44,16 +44,12 @@ int SpaceCommandFormatException::line_number() const throw() {
     return m_line_number;
 }
 
-SpaceCommand::SpaceCommand(gloox::JID _peer, const std::string _cmd,
+SpaceCommand::SpaceCommand(const std::string _cmd,
                            std::map<const std::string, std::string> _params)
-    : m_peer(_peer), m_cmd(_cmd), m_params(_params) {}
+    : m_cmd(_cmd), m_params(_params) {}
 
 std::string SpaceCommand::cmd() {
     return this->m_cmd;
-}
-
-gloox::JID SpaceCommand::peer() {
-    return this->m_peer;
 }
 
 std::string SpaceCommand::param(const std::string key) throw(std::out_of_range) {
@@ -140,13 +136,13 @@ void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::Message
     if (session)
         try {
             // create the command
-            const SpaceCommand cmd = parseMessage(session->target(), msg.body());
+            const SpaceCommand cmd = parseMessage(msg.body());
 
             SpaceCommandSink* sink = new Sink(session);
 
             // call handler
             if (m_hnd)
-                m_hnd->handleSpaceCommand(cmd, sink);
+                m_hnd->handleSpaceCommand(session->target(), cmd, sink);
 
             delete sink;
         } catch (SpaceCommandFormatException& scfe) {
@@ -160,7 +156,7 @@ void SpaceControlClient::handleMessage(const gloox::Message& msg, gloox::Message
                 s << scfe.line_number();
                 par["line number"] = s.str();
             }
-            SpaceCommand ex(session->target(), "exception", par);
+            SpaceCommand ex("exception", par);
             session->send(ex.as_body());
         }
     //TODO else warn
@@ -182,7 +178,7 @@ SpaceCommandSink* SpaceControlClient::create_sink(gloox::JID peer) {
 
 
 
-SpaceCommand SpaceControlClient::parseMessage(gloox::JID peer, std::string body)
+SpaceCommand SpaceControlClient::parseMessage(std::string body)
 throw(SpaceCommandFormatException) {
     // the command
     std::string command;
@@ -243,5 +239,5 @@ throw(SpaceCommandFormatException) {
     }
 
     // create the command
-    return SpaceCommand(peer, command, params);
+    return SpaceCommand(command, params);
 }
